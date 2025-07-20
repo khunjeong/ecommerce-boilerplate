@@ -1,0 +1,473 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 사용자 모델
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?
+  name          String
+  phone         String?
+  avatar        String?
+  role          UserRole  @default(CUSTOMER)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 소셜 로그인
+  accounts      Account[]
+  
+  // 주문 관련
+  orders        Order[]
+  reviews       Review[]
+  wishlist      WishlistItem[]
+  cartItems     CartItem[]
+  
+  // 배송지
+  addresses     Address[]
+  
+  // 판매자 정보 (판매자인 경우)
+  sellerProfile SellerProfile?
+
+  @@map("users")
+}
+
+// 소셜 로그인 계정
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// 판매자 프로필
+model SellerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  companyName String
+  description String?
+  website     String?
+  phone       String?
+  address     String?
+  businessNumber String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products    Product[]
+
+  @@map("seller_profiles")
+}
+
+// 카테고리
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  image       String?
+  parentId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+
+  @@map("categories")
+}
+
+// 상품
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  price       Decimal  @db.Decimal(10, 2)
+  comparePrice Decimal? @db.Decimal(10, 2)
+  sku         String?  @unique
+  barcode     String?
+  weight      Float?
+  dimensions  String? // JSON: {length, width, height}
+  stock       Int      @default(0)
+  minStock    Int      @default(0)
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  viewCount   Int      @default(0)
+  soldCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 관계
+  categoryId  String
+  sellerId    String?
+  
+  category    Category        @relation(fields: [categoryId], references: [id])
+  seller      SellerProfile?  @relation(fields: [sellerId], references: [id])
+  images      ProductImage[]
+  variants    ProductVariant[]
+  reviews     Review[]
+  cartItems   CartItem[]
+  wishlistItems WishlistItem[]
+  orderItems  OrderItem[]
+  tags        ProductTag[]
+
+  @@map("products")
+}
+
+// 상품 이미지
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  order     Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+// 상품 변형 (색상, 사이즈 등)
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  name      String   // 예: "색상", "사이즈"
+  value     String   // 예: "빨강", "L"
+  price     Decimal? @db.Decimal(10, 2) // 변형별 추가 가격
+  stock     Int      @default(0)
+  sku       String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+
+  @@map("product_variants")
+}
+
+// 상품 태그
+model ProductTag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  products  Product[]
+
+  @@map("product_tags")
+}
+
+// 주문
+model Order {
+  id            String        @id @default(cuid())
+  orderNumber   String        @unique
+  userId        String
+  status        OrderStatus   @default(PENDING)
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  subtotal      Decimal       @db.Decimal(10, 2)
+  taxAmount     Decimal       @db.Decimal(10, 2) @default(0)
+  shippingAmount Decimal      @db.Decimal(10, 2) @default(0)
+  discountAmount Decimal      @db.Decimal(10, 2) @default(0)
+  currency      String        @default("KRW")
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // 관계
+  user          User          @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+  payments      Payment[]
+  shipping      Shipping?
+  reviews       Review[]
+  billingAddress Address      @relation("BillingAddress", fields: [billingAddressId], references: [id])
+  shippingAddress Address     @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  
+  billingAddressId   String
+  shippingAddressId  String
+
+  @@map("orders")
+}
+
+// 주문 아이템
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  quantity    Int
+  price       Decimal  @db.Decimal(10, 2)
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  variantId   String?
+  createdAt   DateTime @default(now())
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@map("order_items")
+}
+
+// 결제
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String
+  amount        Decimal       @db.Decimal(10, 2)
+  currency      String        @default("KRW")
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  transactionId String?       @unique
+  gateway       String        // "stripe", "kakao", "naver" 등
+  metadata      Json?         // 게이트웨이별 추가 정보
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+// 배송
+model Shipping {
+  id              String        @id @default(cuid())
+  orderId         String        @unique
+  method          ShippingMethod
+  status          ShippingStatus @default(PENDING)
+  trackingNumber  String?
+  trackingUrl     String?
+  estimatedDelivery DateTime?
+  actualDelivery   DateTime?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("shipping")
+}
+
+// 배송지
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  type        AddressType
+  name        String
+  phone       String
+  address1    String
+  address2    String?
+  city        String
+  state       String?
+  postalCode  String
+  country     String   @default("KR")
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 주문에서 사용되는 배송지/청구지
+  billingOrders  Order[] @relation("BillingAddress")
+  shippingOrders Order[] @relation("ShippingAddress")
+
+  @@map("addresses")
+}
+
+// 장바구니 아이템
+model CartItem {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  quantity    Int      @default(1)
+  variantId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@unique([userId, productId, variantId])
+  @@map("cart_items")
+}
+
+// 위시리스트
+model WishlistItem {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+// 리뷰
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  orderId     String?
+  rating      Int      // 1-5
+  title       String?
+  content     String   @db.Text
+  images      String[] // 이미지 URL 배열
+  isVerified  Boolean  @default(false)
+  isHelpful   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order       Order?   @relation(fields: [orderId], references: [id])
+
+  @@unique([userId, productId, orderId])
+  @@map("reviews")
+}
+
+// 쿠폰
+model Coupon {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  name          String
+  description   String?
+  type          CouponType
+  value         Decimal      @db.Decimal(10, 2)
+  minAmount     Decimal?     @db.Decimal(10, 2)
+  maxDiscount   Decimal?     @db.Decimal(10, 2)
+  usageLimit    Int?
+  usedCount     Int          @default(0)
+  isActive      Boolean      @default(true)
+  startsAt      DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  usages        CouponUsage[]
+
+  @@map("coupons")
+}
+
+// 쿠폰 사용 내역
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  orderId   String
+  usedAt    DateTime @default(now())
+
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, userId, orderId])
+  @@map("coupon_usages")
+}
+
+// 알림
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+// 열거형들
+enum UserRole {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  KAKAO_PAY
+  NAVER_PAY
+  TOSS
+  PAYPAL
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum ShippingMethod {
+  STANDARD
+  EXPRESS
+  SAME_DAY
+  PICKUP
+}
+
+enum ShippingStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+enum AddressType {
+  HOME
+  WORK
+  OTHER
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_SHIPPING
+}
+
+enum NotificationType {
+  ORDER_UPDATE
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  SHIPPING_UPDATE
+  PROMOTION
+  SYSTEM
+}
