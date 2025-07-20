@@ -1,0 +1,191 @@
+# 이커머스 보일러플레이트 개발 Task Master 프롬프트
+
+## 🎯 프로젝트 개요
+Cursor IDE를 사용하여 완전한 이커머스 플랫폼의 보일러플레이트를 개발합니다. 현대적이고 확장 가능한 아키텍처로 MVP부터 프로덕션까지 대응할 수 있는 코드베이스를 구축해주세요.
+
+## 🛠 기술 스택
+
+### Frontend (Next.js 14+)
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + Shadcn/ui
+- **State Management**: Zustand 또는 React Query (TanStack Query)
+- **Form Handling**: React Hook Form + Zod
+- **Authentication**: NextAuth.js
+- **Payment**: Stripe 통합
+
+### Backend (NestJS)
+- **Framework**: NestJS 10+
+- **Language**: TypeScript
+- **Database ORM**: Prisma
+- **Authentication**: JWT + Passport
+- **Validation**: Class Validator + Class Transformer
+- **API Documentation**: Swagger/OpenAPI
+- **File Upload**: Multer + Cloudinary
+
+### Database & Infrastructure (무료 티어)
+- **Database**: PostgreSQL (Supabase 무료 플랜)
+- **File Storage**: Cloudinary (무료 플랜)
+- **Deployment**: 
+  - Frontend: Vercel (무료)
+  - Backend: Railway 또는 Render (무료)
+- **Monitoring**: Sentry (무료 플랜)
+
+## 📋 핵심 기능 요구사항
+
+### 1. 사용자 인증 & 권한 관리
+- 이메일/소셜 로그인 (Google, GitHub)
+- 회원가입/로그인/로그아웃
+- 비밀번호 찾기/재설정
+- 이메일 인증
+- 역할 기반 접근 제어 (고객, 판매자, 관리자)
+- 프로필 관리
+
+### 2. 상품 관리
+- 상품 CRUD (Create, Read, Update, Delete)
+- 카테고리/태그 시스템
+- 상품 이미지 업로드 (다중 이미지)
+- 재고 관리
+- 상품 검색 & 필터링
+- 상품 리뷰 & 평점 시스템
+
+### 3. 쇼핑 기능
+- 장바구니 (로그인/비로그인 상태)
+- 찜하기/위시리스트
+- 상품 비교
+- 최근 본 상품
+- 추천 상품 시스템
+
+### 4. 주문 & 결제
+- **결제 시스템**: Stripe 통합
+- 주문 생성/조회/취소
+- 다양한 결제 수단 (카드, 계좌이체, 간편결제)
+- 주문 상태 추적
+- 영수증/세금계산서 발행
+- 환불 처리
+
+### 5. 배송 & 물류
+- 배송지 관리
+- 배송비 계산
+- 배송 상태 추적
+- 배송 옵션 (일반배송, 당일배송 등)
+
+### 6. 관리자 기능
+- 관리자 대시보드
+- 매출/주문 통계
+- 고객 관리
+- 상품 관리
+- 주문 관리
+- 정산 관리
+
+## 🏗 아키텍처 요구사항
+
+### Frontend 구조
+```
+src/
+├── app/                 # Next.js App Router
+│   ├── (auth)/         # 인증 관련 페이지
+│   ├── (shop)/         # 쇼핑 관련 페이지
+│   ├── admin/          # 관리자 페이지
+│   └── api/            # API 라우트
+├── components/         # 재사용 컴포넌트
+│   ├── ui/            # Shadcn/ui 컴포넌트
+│   ├── layout/        # 레이아웃 컴포넌트
+│   └── features/      # 기능별 컴포넌트
+├── lib/               # 유틸리티 & 설정
+├── hooks/             # 커스텀 훅
+├── store/             # 상태 관리
+└── types/             # TypeScript 타입 정의
+```
+
+### Backend 구조
+```
+src/
+├── auth/              # 인증 모듈
+├── users/             # 사용자 관리
+├── products/          # 상품 관리
+├── orders/            # 주문 관리
+├── payments/          # 결제 처리
+├── common/            # 공통 모듈
+│   ├── guards/        # 가드
+│   ├── decorators/    # 데코레이터
+│   └── filters/       # 예외 필터
+├── config/            # 설정
+└── database/          # 데이터베이스 설정
+```
+
+## 🔧 개발 가이드라인
+
+### 코드 품질
+- ESLint + Prettier 설정
+- Husky + lint-staged (pre-commit 훅)
+- TypeScript strict 모드
+- 단위 테스트 (Jest) 커버리지 80% 이상
+- E2E 테스트 (Playwright) 주요 플로우
+
+### 보안 요구사항
+- CORS 설정
+- Rate Limiting
+- Input Validation & Sanitization
+- SQL Injection 방지
+- XSS 방지
+- CSRF 토큰
+- Helmet.js 보안 헤더
+
+### 성능 최적화
+- 이미지 최적화 (Next.js Image)
+- 코드 스플리팅
+- 캐싱 전략 (Redis 또는 메모리 캐시)
+- Database 인덱싱
+- API 응답 압축
+
+## 📄 작업 순서
+
+### Phase 1: 기본 설정 (1-2일)
+1. 프로젝트 초기 설정
+2. Database 스키마 설계
+3. 기본 인증 시스템
+4. 기본 UI 컴포넌트
+
+### Phase 2: 핵심 기능 (3-5일)
+1. 상품 관리 시스템
+2. 장바구니 기능
+3. 주문 시스템
+4. 결제 통합
+
+### Phase 3: 고급 기능 (2-3일)
+1. 관리자 대시보드
+2. 검색 & 필터링
+3. 리뷰 시스템
+4. 추천 시스템
+
+### Phase 4: 최적화 & 배포 (1-2일)
+1. 성능 최적화
+2. 테스트 작성
+3. 배포 설정
+4. 문서화
+
+## 🎨 UI/UX 요구사항
+- 반응형 디자인 (모바일 퍼스트)
+- 접근성 준수 (WCAG 2.1 AA)
+- 다크/라이트 테마 지원
+- 로딩 상태 & 에러 처리
+- 부드러운 애니메이션 (Framer Motion)
+
+## 📚 문서화 요구사항
+- README.md (설치, 실행, 배포 가이드)
+- API 문서 (Swagger)
+- 컴포넌트 문서 (Storybook 선택사항)
+- 환경 변수 설정 가이드
+- 데이터베이스 ERD
+
+## 🚀 추가 고려사항
+- SEO 최적화 (Meta tags, Open Graph)
+- 다국어 지원 준비 (i18n)
+- PWA 기능 (Service Worker)
+- 실시간 알림 (WebSocket 또는 Server-Sent Events)
+- 분석 도구 연동 (Google Analytics)
+
+---
+
+**목표**: 3-5명의 개발팀이 즉시 사용할 수 있는 프로덕션 레디 이커머스 보일러플레이트를 제작해주세요. 확장성과 유지보수성을 최우선으로 고려하되, 무료 티어 서비스를 최대한 활용하여 비용 효율적인 솔루션을 만들어주세요.
