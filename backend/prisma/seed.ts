@@ -13,7 +13,7 @@ async function main() {
       email: 'admin@example.com',
       name: '관리자',
       role: 'ADMIN',
-      password: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1m', // password: admin123
+      password: '$2b$10$szsmB70p9cqHX5nVfRaAZOHsi2VsBiGRydYjNN0j8QV5cm61GKrBW', // password: admin123
     },
   });
 
@@ -25,7 +25,7 @@ async function main() {
       email: 'user@example.com',
       name: '테스트 사용자',
       role: 'CUSTOMER',
-      password: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1m', // password: user123
+      password: '$2b$10$1Q6tjj2bHj6SzuWaGbfKzeS2E.ABLgIObMZBxe0UqAfE0NG0ljY2S', // password: user123
     },
   });
 
@@ -37,7 +37,7 @@ async function main() {
       email: 'seller@example.com',
       name: '판매자',
       role: 'SELLER',
-      password: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1m', // password: seller123
+      password: '$2b$10$vgqpSOczKPTjKM5Tx4JMYeay2Vsx9cshiHZeYVM9re76knlEvh/RC', // password: seller123
     },
   });
 
@@ -56,99 +56,123 @@ async function main() {
   });
 
   // 카테고리 생성
-  const electronicsCategory = await prisma.category.upsert({
+  let electronicsCategory = await prisma.category.findFirst({
     where: { name: '전자제품' },
-    update: {},
-    create: {
-      name: '전자제품',
-      description: '다양한 전자제품을 만나보세요',
-    },
   });
+  if (!electronicsCategory) {
+    electronicsCategory = await prisma.category.create({
+      data: {
+        name: '전자제품',
+        description: '다양한 전자제품을 만나보세요',
+      },
+    });
+  }
 
-  const clothingCategory = await prisma.category.upsert({
+  let clothingCategory = await prisma.category.findFirst({
     where: { name: '의류' },
-    update: {},
-    create: {
-      name: '의류',
-      description: '트렌디한 의류를 만나보세요',
-    },
   });
+  if (!clothingCategory) {
+    clothingCategory = await prisma.category.create({
+      data: {
+        name: '의류',
+        description: '트렌디한 의류를 만나보세요',
+      },
+    });
+  }
 
-  const bookCategory = await prisma.category.upsert({
+  let bookCategory = await prisma.category.findFirst({
     where: { name: '도서' },
-    update: {},
-    create: {
-      name: '도서',
-      description: '다양한 도서를 만나보세요',
-    },
   });
+  if (!bookCategory) {
+    bookCategory = await prisma.category.create({
+      data: {
+        name: '도서',
+        description: '다양한 도서를 만나보세요',
+      },
+    });
+  }
 
   // 서브카테고리 생성
-  const smartphoneCategory = await prisma.category.upsert({
+  let smartphoneCategory = await prisma.category.findFirst({
     where: { name: '스마트폰' },
-    update: {},
-    create: {
-      name: '스마트폰',
-      description: '최신 스마트폰을 만나보세요',
-      parentId: electronicsCategory.id,
-    },
   });
+  if (!smartphoneCategory) {
+    smartphoneCategory = await prisma.category.create({
+      data: {
+        name: '스마트폰',
+        description: '최신 스마트폰을 만나보세요',
+        parentId: electronicsCategory.id,
+      },
+    });
+  }
 
-  const laptopCategory = await prisma.category.upsert({
+  let laptopCategory = await prisma.category.findFirst({
     where: { name: '노트북' },
-    update: {},
-    create: {
-      name: '노트북',
-      description: '강력한 성능의 노트북을 만나보세요',
-      parentId: electronicsCategory.id,
-    },
   });
+  if (!laptopCategory) {
+    laptopCategory = await prisma.category.create({
+      data: {
+        name: '노트북',
+        description: '강력한 성능의 노트북을 만나보세요',
+        parentId: electronicsCategory.id,
+      },
+    });
+  }
 
   // 상품 생성
-  const product1 = await prisma.product.upsert({
+  let product1 = await prisma.product.findFirst({
     where: { name: '테스트 스마트폰' },
-    update: {},
-    create: {
-      name: '테스트 스마트폰',
-      description: '테스트용 스마트폰입니다. 최신 기술이 적용되어 있습니다.',
-      price: 800000,
-      comparePrice: 900000,
-      sku: 'PHONE-001',
-      stock: 50,
-      categoryId: smartphoneCategory.id,
-      sellerId: sellerProfile.id,
-    },
   });
+  if (!product1) {
+    product1 = await prisma.product.create({
+      data: {
+        name: '테스트 스마트폰',
+        description: '테스트용 스마트폰입니다. 최신 기술이 적용되어 있습니다.',
+        price: 800000,
+        comparePrice: 900000,
+        sku: 'PHONE-001',
+        stock: 50,
+        categoryId: smartphoneCategory.id,
+        sellerId: sellerProfile.id,
+      },
+    });
+  }
 
-  const product2 = await prisma.product.upsert({
+  let product2 = await prisma.product.findFirst({
     where: { name: '테스트 노트북' },
-    update: {},
-    create: {
-      name: '테스트 노트북',
-      description: '테스트용 노트북입니다. 강력한 성능을 제공합니다.',
-      price: 1500000,
-      comparePrice: 1700000,
-      sku: 'LAPTOP-001',
-      stock: 20,
-      categoryId: laptopCategory.id,
-      sellerId: sellerProfile.id,
-    },
   });
+  if (!product2) {
+    product2 = await prisma.product.create({
+      data: {
+        name: '테스트 노트북',
+        description: '테스트용 노트북입니다. 강력한 성능을 제공합니다.',
+        price: 1500000,
+        comparePrice: 1700000,
+        sku: 'LAPTOP-001',
+        stock: 20,
+        categoryId: laptopCategory.id,
+        sellerId: sellerProfile.id,
+      },
+    });
+  }
 
-  const product3 = await prisma.product.upsert({
+  let product3 = await prisma.product.findFirst({
     where: { name: '테스트 의류' },
-    update: {},
-    create: {
-      name: '테스트 의류',
-      description: '테스트용 의류입니다. 편안하고 스타일리시합니다.',
-      price: 50000,
-      comparePrice: 60000,
-      sku: 'CLOTH-001',
-      stock: 100,
-      categoryId: clothingCategory.id,
-      sellerId: sellerProfile.id,
-    },
   });
+  if (!product3) {
+    product3 = await prisma.product.create({
+      data: {
+        name: '테스트 의류',
+        description: '테스트용 의류입니다. 편안하고 스타일리시합니다.',
+        price: 50000,
+        comparePrice: 60000,
+        sku: 'CLOTH-001',
+        stock: 100,
+        categoryId: clothingCategory.id,
+        sellerId: sellerProfile.id,
+      },
+    });
+  }
 
   // 상품 이미지 생성
   await prisma.productImage.upsert({
@@ -188,23 +212,32 @@ async function main() {
   });
 
   // 상품 태그 생성
-  const tag1 = await prisma.productTag.upsert({
+  let tag1 = await prisma.productTag.findFirst({
     where: { name: '인기상품' },
-    update: {},
-    create: { name: '인기상품' },
   });
+  if (!tag1) {
+    tag1 = await prisma.productTag.create({
+      data: { name: '인기상품' },
+    });
+  }
 
-  const tag2 = await prisma.productTag.upsert({
+  let tag2 = await prisma.productTag.findFirst({
     where: { name: '신상품' },
-    update: {},
-    create: { name: '신상품' },
   });
+  if (!tag2) {
+    tag2 = await prisma.productTag.create({
+      data: { name: '신상품' },
+    });
+  }
 
-  const tag3 = await prisma.productTag.upsert({
+  let tag3 = await prisma.productTag.findFirst({
     where: { name: '할인상품' },
-    update: {},
-    create: { name: '할인상품' },
   });
+  if (!tag3) {
+    tag3 = await prisma.productTag.create({
+      data: { name: '할인상품' },
+    });
+  }
 
   // 상품에 태그 연결
   await prisma.product.update({
