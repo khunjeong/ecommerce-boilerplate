@@ -1,32 +1,31 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery } from '@tanstack/react-query';
-import { usersAPI } from '@/lib/api';
-import { LogOut, Users, User, Shield } from 'lucide-react';
-import { User as UserType } from '@/types/auth';
+import { User } from '@/types/auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Users,
+  Package,
+  ShoppingCart,
+  DollarSign,
+  ArrowRight,
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function DashboardPage() {
-  const { user, logout, isAuthenticated, isLoading } = useAuth();
+  const { user, logout } = useAuth();
 
-  const { data: users, isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => usersAPI.getUsers().then(res => res.data),
-    enabled: isAuthenticated,
-  });
-
-  if (isLoading) {
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">로딩 중...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">로그인이 필요합니다.</div>
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">로그인이 필요합니다</h1>
+          <Link href="/login">
+            <Button>로그인하기</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -34,173 +33,163 @@ export default function DashboardPage() {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Shield className="h-5 w-5 text-red-500" />;
+        return '👑';
       case 'SELLER':
-        return <User className="h-5 w-5 text-blue-500" />;
+        return '🏪';
+      case 'USER':
+        return '👤';
       default:
-        return <User className="h-5 w-5 text-gray-500" />;
+        return '👤';
     }
   };
 
-  const getRoleText = (role: string) => {
+  const getRoleColor = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return '관리자';
+        return 'bg-red-100 text-red-800';
       case 'SELLER':
-        return '판매자';
-      case 'CUSTOMER':
-        return '고객';
+        return 'bg-blue-100 text-blue-800';
+      case 'USER':
+        return 'bg-green-100 text-green-800';
       default:
-        return role;
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="container mx-auto py-8">
       {/* 헤더 */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Task Master</h1>
-              <p className="text-gray-600">관리 시스템</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.name}
-                </p>
-                <p className="text-sm text-gray-500">{user?.email}</p>
-              </div>
-              <button
-                onClick={logout}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>로그아웃</span>
-              </button>
-            </div>
-          </div>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">대시보드</h1>
+          <p className="text-muted-foreground mt-2">
+            안녕하세요, {user.name}님! ({user.email})
+          </p>
         </div>
-      </header>
-
-      {/* 메인 콘텐츠 */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {/* 통계 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Users className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      총 사용자
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {isLoadingUsers ? '로딩 중...' : users?.length || 0}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Shield className="h-6 w-6 text-red-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      관리자
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {isLoadingUsers
-                        ? '로딩 중...'
-                        : users?.filter((u: UserType) => u.role === 'ADMIN')
-                            .length || 0}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <User className="h-6 w-6 text-blue-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      일반 사용자
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {isLoadingUsers
-                        ? '로딩 중...'
-                        : users?.filter((u: UserType) => u.role === 'CUSTOMER')
-                            .length || 0}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center gap-4">
+          <Badge className={getRoleColor(user.role)}>
+            {getRoleIcon(user.role)} {user.role}
+          </Badge>
+          <Button variant="outline" onClick={logout}>
+            로그아웃
+          </Button>
         </div>
+      </div>
 
-        {/* 사용자 목록 */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              사용자 목록
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              시스템에 등록된 모든 사용자
+      {/* 통계 카드 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">총 사용자</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1,234</div>
+            <p className="text-xs text-muted-foreground">
+              +20.1% from last month
             </p>
-          </div>
-          <div className="border-t border-gray-200">
-            {isLoadingUsers ? (
-              <div className="px-4 py-8 text-center text-gray-500">
-                사용자 목록을 불러오는 중...
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">총 상품</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">567</div>
+            <p className="text-xs text-muted-foreground">
+              +12.3% from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">총 주문</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">890</div>
+            <p className="text-xs text-muted-foreground">
+              +8.7% from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">총 매출</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₩123,456,789</div>
+            <p className="text-xs text-muted-foreground">
+              +15.2% from last month
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 관리 메뉴 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Link href="/products">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                상품 관리
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                상품을 추가, 수정, 삭제하고 재고를 관리합니다.
+              </p>
+              <div className="flex items-center text-sm text-blue-600">
+                관리하기 <ArrowRight className="h-4 w-4 ml-1" />
               </div>
-            ) : (
-              <ul className="divide-y divide-gray-200">
-                {users?.map((user: UserType) => (
-                  <li key={user.id} className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          {getRoleIcon(user.role)}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {user.email}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {getRoleText(user.role)}
-                        </span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </main>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/categories">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                카테고리 관리
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                상품 카테고리를 관리하고 계층 구조를 설정합니다.
+              </p>
+              <div className="flex items-center text-sm text-blue-600">
+                관리하기 <ArrowRight className="h-4 w-4 ml-1" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/users">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                사용자 관리
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                사용자 계정을 관리하고 권한을 설정합니다.
+              </p>
+              <div className="flex items-center text-sm text-blue-600">
+                관리하기 <ArrowRight className="h-4 w-4 ml-1" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
     </div>
   );
 }
