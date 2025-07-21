@@ -1,315 +1,302 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
+  console.log('🌱 시드 데이터 생성을 시작합니다...');
 
-  // 관리자 사용자 생성
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {},
-    create: {
+  // 기존 데이터 삭제
+  await prisma.user.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.productTag.deleteMany();
+
+  // 사용자 생성
+  const hashedPassword = await bcrypt.hash('admin123', 10);
+
+  const admin = await prisma.user.create({
+    data: {
       email: 'admin@example.com',
+      password: hashedPassword,
       name: '관리자',
       role: 'ADMIN',
-      password: '$2b$10$szsmB70p9cqHX5nVfRaAZOHsi2VsBiGRydYjNN0j8QV5cm61GKrBW', // password: admin123
     },
   });
 
-  // 테스트 사용자 생성
-  const testUser = await prisma.user.upsert({
-    where: { email: 'user@example.com' },
-    update: {},
-    create: {
-      email: 'user@example.com',
-      name: '테스트 사용자',
-      role: 'CUSTOMER',
-      password: '$2b$10$1Q6tjj2bHj6SzuWaGbfKzeS2E.ABLgIObMZBxe0UqAfE0NG0ljY2S', // password: user123
-    },
-  });
-
-  // 판매자 사용자 생성
-  const sellerUser = await prisma.user.upsert({
-    where: { email: 'seller@example.com' },
-    update: {},
-    create: {
+  const seller = await prisma.user.create({
+    data: {
       email: 'seller@example.com',
+      password: hashedPassword,
       name: '판매자',
       role: 'SELLER',
-      password: '$2b$10$vgqpSOczKPTjKM5Tx4JMYeay2Vsx9cshiHZeYVM9re76knlEvh/RC', // password: seller123
+    },
+  });
+
+  const customer = await prisma.user.create({
+    data: {
+      email: 'customer@example.com',
+      password: hashedPassword,
+      name: '고객',
+      role: 'CUSTOMER',
     },
   });
 
   // 판매자 프로필 생성
-  const sellerProfile = await prisma.sellerProfile.upsert({
-    where: { userId: sellerUser.id },
-    update: {},
-    create: {
-      userId: sellerUser.id,
+  const sellerProfile = await prisma.sellerProfile.create({
+    data: {
+      userId: seller.id,
       companyName: '테스트 쇼핑몰',
-      description: '테스트용 쇼핑몰입니다.',
-      phone: '010-1234-5678',
+      description: '다양한 상품을 판매하는 테스트 쇼핑몰입니다.',
+      website: 'https://example.com',
+      phone: '02-1234-5678',
       address: '서울시 강남구 테스트로 123',
       businessNumber: '123-45-67890',
     },
   });
 
   // 카테고리 생성
-  let electronicsCategory = await prisma.category.findFirst({
-    where: { name: '전자제품' },
-  });
-  if (!electronicsCategory) {
-    electronicsCategory = await prisma.category.create({
-      data: {
-        name: '전자제품',
-        description: '다양한 전자제품을 만나보세요',
-      },
-    });
-  }
-
-  let clothingCategory = await prisma.category.findFirst({
-    where: { name: '의류' },
-  });
-  if (!clothingCategory) {
-    clothingCategory = await prisma.category.create({
-      data: {
-        name: '의류',
-        description: '트렌디한 의류를 만나보세요',
-      },
-    });
-  }
-
-  let bookCategory = await prisma.category.findFirst({
-    where: { name: '도서' },
-  });
-  if (!bookCategory) {
-    bookCategory = await prisma.category.create({
-      data: {
-        name: '도서',
-        description: '다양한 도서를 만나보세요',
-      },
-    });
-  }
-
-  // 서브카테고리 생성
-  let smartphoneCategory = await prisma.category.findFirst({
-    where: { name: '스마트폰' },
-  });
-  if (!smartphoneCategory) {
-    smartphoneCategory = await prisma.category.create({
-      data: {
-        name: '스마트폰',
-        description: '최신 스마트폰을 만나보세요',
-        parentId: electronicsCategory.id,
-      },
-    });
-  }
-
-  let laptopCategory = await prisma.category.findFirst({
-    where: { name: '노트북' },
-  });
-  if (!laptopCategory) {
-    laptopCategory = await prisma.category.create({
-      data: {
-        name: '노트북',
-        description: '강력한 성능의 노트북을 만나보세요',
-        parentId: electronicsCategory.id,
-      },
-    });
-  }
-
-  // 상품 생성
-  let product1 = await prisma.product.findFirst({
-    where: { name: '테스트 스마트폰' },
-  });
-  if (!product1) {
-    product1 = await prisma.product.create({
-      data: {
-        name: '테스트 스마트폰',
-        description: '테스트용 스마트폰입니다. 최신 기술이 적용되어 있습니다.',
-        price: 800000,
-        comparePrice: 900000,
-        sku: 'PHONE-001',
-        stock: 50,
-        categoryId: smartphoneCategory.id,
-        sellerId: sellerProfile.id,
-      },
-    });
-  }
-
-  let product2 = await prisma.product.findFirst({
-    where: { name: '테스트 노트북' },
-  });
-  if (!product2) {
-    product2 = await prisma.product.create({
-      data: {
-        name: '테스트 노트북',
-        description: '테스트용 노트북입니다. 강력한 성능을 제공합니다.',
-        price: 1500000,
-        comparePrice: 1700000,
-        sku: 'LAPTOP-001',
-        stock: 20,
-        categoryId: laptopCategory.id,
-        sellerId: sellerProfile.id,
-      },
-    });
-  }
-
-  let product3 = await prisma.product.findFirst({
-    where: { name: '테스트 의류' },
-  });
-  if (!product3) {
-    product3 = await prisma.product.create({
-      data: {
-        name: '테스트 의류',
-        description: '테스트용 의류입니다. 편안하고 스타일리시합니다.',
-        price: 50000,
-        comparePrice: 60000,
-        sku: 'CLOTH-001',
-        stock: 100,
-        categoryId: clothingCategory.id,
-        sellerId: sellerProfile.id,
-      },
-    });
-  }
-
-  // 상품 이미지 생성
-  await prisma.productImage.upsert({
-    where: { id: 'img-1' },
-    update: {},
-    create: {
-      id: 'img-1',
-      productId: product1.id,
-      url: 'https://via.placeholder.com/400x400?text=Smartphone',
-      alt: '테스트 스마트폰 이미지',
-      isPrimary: true,
+  const electronics = await prisma.category.create({
+    data: {
+      name: '전자제품',
+      description: '다양한 전자제품을 만나보세요',
+      image:
+        'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400',
     },
   });
 
-  await prisma.productImage.upsert({
-    where: { id: 'img-2' },
-    update: {},
-    create: {
-      id: 'img-2',
-      productId: product2.id,
-      url: 'https://via.placeholder.com/400x400?text=Laptop',
-      alt: '테스트 노트북 이미지',
-      isPrimary: true,
+  const clothing = await prisma.category.create({
+    data: {
+      name: '의류',
+      description: '트렌디한 의류를 만나보세요',
+      image:
+        'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
     },
   });
 
-  await prisma.productImage.upsert({
-    where: { id: 'img-3' },
-    update: {},
-    create: {
-      id: 'img-3',
-      productId: product3.id,
-      url: 'https://via.placeholder.com/400x400?text=Clothing',
-      alt: '테스트 의류 이미지',
-      isPrimary: true,
+  const books = await prisma.category.create({
+    data: {
+      name: '도서',
+      description: '다양한 도서를 만나보세요',
+      image:
+        'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400',
+    },
+  });
+
+  // 하위 카테고리 생성
+  const smartphone = await prisma.category.create({
+    data: {
+      name: '스마트폰',
+      description: '최신 스마트폰을 만나보세요',
+      parentId: electronics.id,
+      image:
+        'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400',
+    },
+  });
+
+  const laptop = await prisma.category.create({
+    data: {
+      name: '노트북',
+      description: '고성능 노트북을 만나보세요',
+      parentId: electronics.id,
+      image:
+        'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400',
+    },
+  });
+
+  const menClothing = await prisma.category.create({
+    data: {
+      name: '남성의류',
+      description: '남성을 위한 트렌디한 의류',
+      parentId: clothing.id,
+      image:
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    },
+  });
+
+  const womenClothing = await prisma.category.create({
+    data: {
+      name: '여성의류',
+      description: '여성을 위한 세련된 의류',
+      parentId: clothing.id,
+      image:
+        'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400',
     },
   });
 
   // 상품 태그 생성
-  let tag1 = await prisma.productTag.findFirst({
-    where: { name: '인기상품' },
-  });
-  if (!tag1) {
-    tag1 = await prisma.productTag.create({
-      data: { name: '인기상품' },
-    });
-  }
+  const tags = await Promise.all([
+    prisma.productTag.create({ data: { name: '인기상품' } }),
+    prisma.productTag.create({ data: { name: '신상품' } }),
+    prisma.productTag.create({ data: { name: '할인상품' } }),
+    prisma.productTag.create({ data: { name: '베스트셀러' } }),
+    prisma.productTag.create({ data: { name: '추천상품' } }),
+  ]);
 
-  let tag2 = await prisma.productTag.findFirst({
-    where: { name: '신상품' },
-  });
-  if (!tag2) {
-    tag2 = await prisma.productTag.create({
-      data: { name: '신상품' },
-    });
-  }
-
-  let tag3 = await prisma.productTag.findFirst({
-    where: { name: '할인상품' },
-  });
-  if (!tag3) {
-    tag3 = await prisma.productTag.create({
-      data: { name: '할인상품' },
-    });
-  }
-
-  // 상품에 태그 연결
-  await prisma.product.update({
-    where: { id: product1.id },
-    data: {
-      tags: {
-        connect: [{ id: tag1.id }, { id: tag2.id }],
+  // 상품 생성
+  const products = await Promise.all([
+    // 스마트폰
+    prisma.product.create({
+      data: {
+        name: 'iPhone 15 Pro',
+        description:
+          '최신 iPhone 15 Pro입니다. A17 Pro 칩과 48MP 카메라를 탑재했습니다.',
+        price: 1500000,
+        comparePrice: 1700000,
+        sku: 'IPHONE15PRO-128',
+        stock: 50,
+        categoryId: smartphone.id,
+        sellerId: sellerProfile.id,
+        isActive: true,
+        isFeatured: true,
+        images: {
+          create: [
+            {
+              url: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400',
+              order: 0,
+              isPrimary: true,
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400',
+              order: 1,
+              isPrimary: false,
+            },
+          ],
+        },
+        tags: {
+          connect: [
+            { name: '인기상품' },
+            { name: '신상품' },
+            { name: '베스트셀러' },
+          ],
+        },
       },
-    },
-  });
+    }),
 
-  await prisma.product.update({
-    where: { id: product2.id },
-    data: {
-      tags: {
-        connect: [{ id: tag1.id }],
+    // 노트북
+    prisma.product.create({
+      data: {
+        name: 'MacBook Pro 14"',
+        description: 'M3 Pro 칩을 탑재한 MacBook Pro 14인치 모델입니다.',
+        price: 2800000,
+        comparePrice: 3000000,
+        sku: 'MBP14-M3PRO-512',
+        stock: 30,
+        categoryId: laptop.id,
+        sellerId: sellerProfile.id,
+        isActive: true,
+        isFeatured: true,
+        images: {
+          create: [
+            {
+              url: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400',
+              order: 0,
+              isPrimary: true,
+            },
+          ],
+        },
+        tags: {
+          connect: [{ name: '인기상품' }, { name: '베스트셀러' }],
+        },
       },
-    },
-  });
+    }),
 
-  await prisma.product.update({
-    where: { id: product3.id },
-    data: {
-      tags: {
-        connect: [{ id: tag3.id }],
+    // 남성의류
+    prisma.product.create({
+      data: {
+        name: '프리미엄 셔츠',
+        description: '고급스러운 면 소재로 제작된 프리미엄 셔츠입니다.',
+        price: 89000,
+        comparePrice: 120000,
+        sku: 'SHIRT-PREM-001',
+        stock: 100,
+        categoryId: menClothing.id,
+        sellerId: sellerProfile.id,
+        isActive: true,
+        isFeatured: false,
+        images: {
+          create: [
+            {
+              url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+              order: 0,
+              isPrimary: true,
+            },
+          ],
+        },
+        tags: {
+          connect: [{ name: '할인상품' }],
+        },
       },
-    },
-  });
+    }),
 
-  // 쿠폰 생성
-  await prisma.coupon.upsert({
-    where: { code: 'WELCOME10' },
-    update: {},
-    create: {
-      code: 'WELCOME10',
-      name: '신규 가입 10% 할인',
-      description: '신규 가입 고객을 위한 10% 할인 쿠폰',
-      type: 'PERCENTAGE',
-      value: 10,
-      minAmount: 10000,
-      maxDiscount: 50000,
-      usageLimit: 1000,
-      isActive: true,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30일 후 만료
-    },
-  });
+    // 여성의류
+    prisma.product.create({
+      data: {
+        name: '여성 원피스',
+        description: '우아하고 세련된 디자인의 여성 원피스입니다.',
+        price: 120000,
+        comparePrice: 150000,
+        sku: 'DRESS-WOMEN-001',
+        stock: 80,
+        categoryId: womenClothing.id,
+        sellerId: sellerProfile.id,
+        isActive: true,
+        isFeatured: true,
+        images: {
+          create: [
+            {
+              url: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400',
+              order: 0,
+              isPrimary: true,
+            },
+          ],
+        },
+        tags: {
+          connect: [{ name: '신상품' }, { name: '추천상품' }],
+        },
+      },
+    }),
 
-  await prisma.coupon.upsert({
-    where: { code: 'FREESHIP' },
-    update: {},
-    create: {
-      code: 'FREESHIP',
-      name: '무료배송',
-      description: '5만원 이상 구매시 무료배송',
-      type: 'FREE_SHIPPING',
-      value: 0,
-      minAmount: 50000,
-      usageLimit: 500,
-      isActive: true,
-      expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60일 후 만료
-    },
-  });
+    // 도서
+    prisma.product.create({
+      data: {
+        name: '프로그래밍 입문서',
+        description: '초보자를 위한 프로그래밍 입문서입니다.',
+        price: 25000,
+        comparePrice: 30000,
+        sku: 'BOOK-PROG-001',
+        stock: 200,
+        categoryId: books.id,
+        sellerId: sellerProfile.id,
+        isActive: true,
+        isFeatured: false,
+        images: {
+          create: [
+            {
+              url: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400',
+              order: 0,
+              isPrimary: true,
+            },
+          ],
+        },
+        tags: {
+          connect: [{ name: '할인상품' }],
+        },
+      },
+    }),
+  ]);
 
-  console.log('✅ Database seeding completed!');
-  console.log('👤 Admin user: admin@example.com (password: admin123)');
-  console.log('👤 Test user: user@example.com (password: user123)');
-  console.log('👤 Seller user: seller@example.com (password: seller123)');
+  console.log('✅ 시드 데이터 생성이 완료되었습니다!');
+  console.log(`👥 사용자: ${admin.name}, ${seller.name}, ${customer.name}`);
+  console.log(
+    `📂 카테고리: ${electronics.name}, ${clothing.name}, ${books.name}`,
+  );
+  console.log(`🏷️ 태그: ${tags.length}개`);
+  console.log(`📦 상품: ${products.length}개`);
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seeding:', e);
+    console.error('❌ 시드 데이터 생성 중 오류가 발생했습니다:', e);
     process.exit(1);
   })
   .finally(async () => {
