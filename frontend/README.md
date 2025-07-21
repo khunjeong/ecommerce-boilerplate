@@ -52,8 +52,9 @@ http://localhost:3000
 ## 테스트 계정
 
 - **관리자**: `admin@example.com` / `admin123`
-- **일반 사용자**: `user@example.com` / `user123`
-- **판매자**: `seller@example.com` / `seller123`
+- **일반 사용자**: `customer@example.com` / `admin123`
+- **판매자**: `seller@example.com` / `admin123`
+- **관리자**: `admin@example.com` / `admin123`
 
 ## 프로젝트 구조
 

@@ -25,6 +25,14 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## 테스트 계정
+
+시드 데이터로 생성된 테스트 계정들:
+
+- **일반 사용자**: `customer@example.com` / `admin123`
+- **판매자**: `seller@example.com` / `admin123`
+- **관리자**: `admin@example.com` / `admin123`
+
 ## Project setup
 
 ```bash

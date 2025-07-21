@@ -1,15 +1,17 @@
-import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 시드 데이터 생성을 시작합니다...');
 
-  // 기존 데이터 삭제
-  await prisma.user.deleteMany();
+  // 기존 데이터 삭제 (외래키 제약 조건을 고려한 순서)
+  await prisma.product.deleteMany();
   await prisma.category.deleteMany();
   await prisma.productTag.deleteMany();
+  await prisma.user.deleteMany();
 
   // 사용자 생성
   const hashedPassword = await bcrypt.hash('admin123', 10);
