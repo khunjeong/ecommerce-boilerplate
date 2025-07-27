@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   DollarSign,
   ArrowRight,
+  Heart,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -185,6 +186,44 @@ export default function DashboardPage() {
               </p>
               <div className="flex items-center text-sm text-blue-600">
                 관리하기 <ArrowRight className="h-4 w-4 ml-1" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/cart">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5" />
+                장바구니
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                장바구니에 담긴 상품들을 확인하고 관리합니다.
+              </p>
+              <div className="flex items-center text-sm text-blue-600">
+                확인하기 <ArrowRight className="h-4 w-4 ml-1" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/wishlist">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                위시리스트
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                위시리스트에 저장된 상품들을 확인하고 관리합니다.
+              </p>
+              <div className="flex items-center text-sm text-blue-600">
+                확인하기 <ArrowRight className="h-4 w-4 ml-1" />
               </div>
             </CardContent>
           </Card>

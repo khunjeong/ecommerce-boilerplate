@@ -167,6 +167,7 @@ model ProductVariant {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
   cartItems  CartItem[]
+  wishlistItems WishlistItem[]
 
   @@map("product_variants")
 }
@@ -318,12 +319,14 @@ model WishlistItem {
   id          String   @id @default(cuid())
   userId      String
   productId   String
+  variantId   String?
   createdAt   DateTime @default(now())
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
 
-  @@unique([userId, productId])
+  @@unique([userId, productId, variantId])
   @@map("wishlist_items")
 }
 

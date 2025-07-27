@@ -6,6 +6,12 @@ import {
   useCategories,
   useDeleteProduct,
 } from '@/hooks/useProducts';
+import { useAddToCart } from '@/hooks/useCart';
+import {
+  useAddToWishlist,
+  useCheckWishlist,
+  useRemoveFromWishlist,
+} from '@/hooks/useWishlist';
 import { Product, Category } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +24,15 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  ShoppingCart,
+  Heart,
+} from 'lucide-react';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/utils';
 
@@ -42,6 +56,11 @@ export default function ProductsPage() {
 
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const deleteProductMutation = useDeleteProduct();
+
+  // 장바구니 및 위시리스트 훅
+  const addToCartMutation = useAddToCart();
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
 
   const handleDeleteProduct = async (id: string) => {
     if (confirm('정말로 이 상품을 삭제하시겠습니까?')) {
@@ -211,6 +230,35 @@ export default function ProductsPage() {
                   ))}
                 </div>
 
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      addToCartMutation.mutate({
+                        productId: product.id,
+                        quantity: 1,
+                      })
+                    }
+                    disabled={addToCartMutation.isPending}
+                    className="flex-1"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-1" />
+                    장바구니
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      addToWishlistMutation.mutate({ productId: product.id })
+                    }
+                    disabled={addToWishlistMutation.isPending}
+                    className="flex-1"
+                  >
+                    <Heart className="w-4 h-4 mr-1" />
+                    위시리스트
+                  </Button>
+                </div>
                 <div className="flex gap-2 pt-2">
                   <Link href={`/products/${product.id}`} className="flex-1">
                     <Button variant="outline" size="sm" className="w-full">

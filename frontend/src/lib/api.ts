@@ -8,6 +8,18 @@ import {
   Category,
   CategoryListResponse,
 } from '@/types/product';
+import {
+  Cart,
+  CartItem,
+  AddToCartRequest,
+  UpdateCartItemRequest,
+} from '@/types/cart';
+import {
+  Wishlist,
+  WishlistItem,
+  AddToWishlistRequest,
+  WishlistCheckResponse,
+} from '@/types/wishlist';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -148,5 +160,70 @@ export const categoriesAPI = {
   // 카테고리 삭제
   deleteCategory: async (id: string): Promise<void> => {
     await api.delete(`/categories/${id}`);
+  },
+};
+
+// 장바구니 관련 API
+export const cartAPI = {
+  // 장바구니 조회
+  getCart: async (): Promise<Cart> => {
+    const response = await api.get('/cart');
+    return response.data;
+  },
+
+  // 장바구니에 상품 추가
+  addToCart: async (data: AddToCartRequest): Promise<CartItem> => {
+    const response = await api.post('/cart', data);
+    return response.data;
+  },
+
+  // 장바구니 아이템 수정
+  updateCartItem: async (
+    id: string,
+    data: UpdateCartItemRequest
+  ): Promise<CartItem> => {
+    const response = await api.put(`/cart/${id}`, data);
+    return response.data;
+  },
+
+  // 장바구니에서 상품 제거
+  removeFromCart: async (id: string): Promise<void> => {
+    await api.delete(`/cart/${id}`);
+  },
+
+  // 장바구니 비우기
+  clearCart: async (): Promise<void> => {
+    await api.delete('/cart');
+  },
+};
+
+// 위시리스트 관련 API
+export const wishlistAPI = {
+  // 위시리스트 조회
+  getWishlist: async (): Promise<Wishlist> => {
+    const response = await api.get('/wishlist');
+    return response.data;
+  },
+
+  // 위시리스트에 상품 추가
+  addToWishlist: async (data: AddToWishlistRequest): Promise<WishlistItem> => {
+    const response = await api.post('/wishlist', data);
+    return response.data;
+  },
+
+  // 위시리스트에서 상품 제거
+  removeFromWishlist: async (id: string): Promise<void> => {
+    await api.delete(`/wishlist/${id}`);
+  },
+
+  // 위시리스트 비우기
+  clearWishlist: async (): Promise<void> => {
+    await api.delete('/wishlist');
+  },
+
+  // 상품이 위시리스트에 있는지 확인
+  checkWishlist: async (productId: string): Promise<WishlistCheckResponse> => {
+    const response = await api.get(`/wishlist/check/${productId}`);
+    return response.data;
   },
 };
