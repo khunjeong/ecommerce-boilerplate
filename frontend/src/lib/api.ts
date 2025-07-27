@@ -20,6 +20,16 @@ import {
   AddToWishlistRequest,
   WishlistCheckResponse,
 } from '@/types/wishlist';
+import {
+  Order,
+  OrdersResponse,
+  CreateOrderRequest,
+  UpdateOrderRequest,
+  QueryOrderRequest,
+  Address,
+  CreateAddressRequest,
+  UpdateAddressRequest,
+} from '@/types/order';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -224,6 +234,60 @@ export const wishlistAPI = {
   // 상품이 위시리스트에 있는지 확인
   checkWishlist: async (productId: string): Promise<WishlistCheckResponse> => {
     const response = await api.get(`/wishlist/check/${productId}`);
+    return response.data;
+  },
+};
+
+// 주문 관련 API
+export const ordersAPI = {
+  getOrders: async (params?: QueryOrderRequest): Promise<OrdersResponse> => {
+    const response = await api.get('/orders', { params });
+    return response.data;
+  },
+  getOrder: async (id: string): Promise<Order> => {
+    const response = await api.get(`/orders/${id}`);
+    return response.data;
+  },
+  createOrder: async (data: CreateOrderRequest): Promise<Order> => {
+    const response = await api.post('/orders', data);
+    return response.data;
+  },
+  updateOrder: async (id: string, data: UpdateOrderRequest): Promise<Order> => {
+    const response = await api.patch(`/orders/${id}`, data);
+    return response.data;
+  },
+  cancelOrder: async (id: string): Promise<Order> => {
+    const response = await api.delete(`/orders/${id}`);
+    return response.data;
+  },
+};
+
+// 배송지 관련 API
+export const addressesAPI = {
+  getAddresses: async (): Promise<Address[]> => {
+    const response = await api.get('/addresses');
+    return response.data;
+  },
+  getAddress: async (id: string): Promise<Address> => {
+    const response = await api.get(`/addresses/${id}`);
+    return response.data;
+  },
+  createAddress: async (data: CreateAddressRequest): Promise<Address> => {
+    const response = await api.post('/addresses', data);
+    return response.data;
+  },
+  updateAddress: async (
+    id: string,
+    data: UpdateAddressRequest
+  ): Promise<Address> => {
+    const response = await api.patch(`/addresses/${id}`, data);
+    return response.data;
+  },
+  deleteAddress: async (id: string): Promise<void> => {
+    await api.delete(`/addresses/${id}`);
+  },
+  setDefaultAddress: async (id: string): Promise<Address> => {
+    const response = await api.patch(`/addresses/${id}/default`);
     return response.data;
   },
 };

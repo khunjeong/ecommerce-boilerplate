@@ -12,6 +12,7 @@ import {
   DollarSign,
   ArrowRight,
   Heart,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -221,6 +222,25 @@ export default function DashboardPage() {
             <CardContent>
               <p className="text-muted-foreground mb-4">
                 위시리스트에 저장된 상품들을 확인하고 관리합니다.
+              </p>
+              <div className="flex items-center text-sm text-blue-600">
+                확인하기 <ArrowRight className="h-4 w-4 ml-1" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/orders">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                주문 내역
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                주문 내역을 확인하고 배송 상태를 추적합니다.
               </p>
               <div className="flex items-center text-sm text-blue-600">
                 확인하기 <ArrowRight className="h-4 w-4 ml-1" />
